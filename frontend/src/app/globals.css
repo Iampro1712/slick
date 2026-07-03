@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+/*
+ * Sistema visual "Clinical Precision" — tema claro.
+ * Paleta teal profesional, superficies en capas tonales, sombras ambientales
+ * suaves y bordes finos. Tokens expuestos vía @theme para generar utilidades
+ * (bg-primary, text-ink, border-line, shadow-card…). Tailwind v4.
+ */
+@theme {
+  /* Superficies en capas (de fondo a elevado) */
+  --color-canvas: #f9fafb; /* lienzo de la app */
+  --color-surface: #ffffff; /* tarjetas, formularios */
+  --color-surface-muted: #f1f5f9; /* rellenos sutiles, filas alternas */
+  --color-surface-tint: #f0fdfa; /* tinte teal para hover/seleccción suave */
+
+  /* Líneas y texto */
+  --color-line: #e2e8f0; /* borde por defecto */
+  --color-line-strong: #cbd5e1; /* borde de control / hover */
+  --color-ink: #0f172a; /* texto principal */
+  --color-muted: #64748b; /* texto secundario */
+  --color-faint: #94a3b8; /* texto terciario / placeholder */
+
+  /* Acción primaria — Professional Teal */
+  --color-primary: #0d9488;
+  --color-primary-hover: #0f766e;
+  --color-primary-soft: #ccfbf1;
+  --color-on-primary: #ffffff;
+
+  /* Acento informativo — Trustworthy Blue */
+  --color-accent: #2563eb;
+
+  /* Éxito / disponibilidad */
+  --color-success: #10b981;
+  --color-success-soft: #d1fae5;
+  --color-success-ink: #065f46;
+
+  /* Tipografía */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    sans-serif;
+
+  /* Elevación — sombras ambientales (slate) */
+  --shadow-card: 0 1px 2px -1px rgb(100 116 139 / 0.12),
+    0 2px 4px -1px rgb(100 116 139 / 0.1);
+  --shadow-card-hover: 0 4px 8px -2px rgb(100 116 139 / 0.15),
+    0 2px 4px -2px rgb(100 116 139 / 0.1);
+  --shadow-pop: 0 10px 30px -10px rgb(15 23 42 / 0.25);
+}
+
+:root {
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
+  color-scheme: light;
+}
+
+/*
+ * Modo oscuro — se activa con la clase `.dark` en <html>.
+ * Redefine los mismos tokens; las utilidades referencian var(--color-*) en
+ * runtime, así que todo el sistema cambia sin tocar las pantallas. Este bloque
+ * va sin @layer, por lo que gana sobre los tokens base de Tailwind.
+ */
+.dark {
+  color-scheme: dark;
+
+  --color-canvas: #0b1220;
+  --color-surface: #131c2e;
+  --color-surface-muted: #1c2740;
+  --color-surface-tint: #0f2e2b;
+
+  --color-line: #243049;
+  --color-line-strong: #38476a;
+  --color-ink: #e8eef9;
+  --color-muted: #9aa9c4;
+  --color-faint: #6b7a99;
+
+  --color-primary: #16b8a6;
+  --color-primary-hover: #2dd4bf;
+  --color-primary-soft: #123f3a;
+  --color-on-primary: #04211d;
+
+  --color-accent: #60a5fa;
+
+  --color-success: #34d399;
+  --color-success-soft: #0c3b2e;
+  --color-success-ink: #a7f3d0;
+
+  --shadow-card: 0 1px 2px -1px rgb(0 0 0 / 0.5), 0 2px 6px -2px rgb(0 0 0 / 0.45);
+  --shadow-card-hover: 0 6px 14px -4px rgb(0 0 0 / 0.55),
+    0 2px 6px -2px rgb(0 0 0 / 0.4);
+  --shadow-pop: 0 16px 40px -12px rgb(0 0 0 / 0.65);
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Foco visible y accesible en todos los controles interactivos. */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Entrada de los toasts. */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Entrada suave de contenido (hero, secciones). Solo se aplica con
+   motion-safe: en el marcado, así que ya respeta prefers-reduced-motion. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -5,6 +5,43 @@ Todos los cambios notables de **Slick** se documentan aquí.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el proyecto
 se adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 
+## [1.1.0] — 2026-07-09
+
+Personalización de la primera instancia real (Barbería Contreras) y despliegue a
+producción: correcciones de infraestructura, autenticación y un cierre de seguridad.
+
+### Añadido
+- Marca de la instancia centralizada en `lib/brand.ts`: personalizar un negocio nuevo
+  ahora es editar un solo archivo (nombre, eslogan, año), propagado a nav, footer,
+  paneles y metadatos.
+- Validación y formato automático del teléfono en la reserva: 8 dígitos con guion
+  (`8855-9869`), reforzado también en el backend.
+- `vercel.json` para el despliegue del frontend (Next.js + pnpm).
+
+### Cambiado
+- El flujo de reserva pasa de 4 a 3 pasos: se elimina "elegir profesional" para
+  negocios de un solo barbero; la cita se asigna automáticamente.
+- Teléfono y email pasan a ser obligatorios al reservar (antes bastaba uno de los dos).
+- Los enlaces de los correos de confirmación/recordatorio apuntan al **frontend**
+  (`/cita/{token}`) en vez de a la API, y sus datos (servicio/barbero/fecha/hora) ya
+  no se colapsan en una sola línea.
+
+### Corregido
+- **Seguridad (IDOR):** ver/cancelar una cita por su token exigía solo el token, sin
+  sesión ni verificar dueño — cualquiera con el enlace podía ver o cancelar la cita de
+  otra persona. Ahora exige sesión y que la cita pertenezca al usuario (o un rol del
+  negocio); si no, responde 404 sin revelar su existencia.
+- La sesión de Google no persistía tras el login: la cookie se fijaba sobre un
+  redirect de forma poco fiable, y el token Sanctum se reenviaba con su `|` mal
+  codificado (`%7C`) al backend.
+- El helper del BFF fuerza `https` en hosts remotos: una `API_URL` mal configurada en
+  `http://` hacía que `fetch` perdiera el header `Authorization` en el redirect a
+  `https`, dejando a cualquier usuario sin sesión.
+- `supervisord` abortaba al arrancar como no-root (pedía bajar privilegios estando ya
+  en `www-data`), dejando el contenedor en `Exited` sin llegar a *healthy*.
+- Faltaba `TrustProxies`: detrás del reverse proxy de Dokploy (Traefik), Laravel no
+  detectaba las peticiones como HTTPS.
+
 ## [1.0.0] — 2026-07-03
 
 Primera versión funcional. Sistema de reservas completo: sitio público de reserva, paneles

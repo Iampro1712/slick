@@ -28,6 +28,17 @@ function todayISO(): string {
   return new Date(d.getTime() - off * 60_000).toISOString().slice(0, 10);
 }
 
+/** Solo los dígitos del teléfono, máximo 8 (para validar y detectar completitud). */
+function phoneDigits(value: string): string {
+  return value.replace(/\D/g, "").slice(0, 8);
+}
+
+/** Formatea el teléfono como "8855-9869" mientras se escribe (guion tras 4 dígitos). */
+function formatPhone(value: string): string {
+  const d = phoneDigits(value);
+  return d.length > 4 ? `${d.slice(0, 4)}-${d.slice(4)}` : d;
+}
+
 export default function BookingWizardPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -264,13 +275,29 @@ export default function BookingWizardPage() {
                       />
                     </Field>
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <Field label="Teléfono" htmlFor="phone" required>
+                      <Field
+                        label="Teléfono"
+                        htmlFor="phone"
+                        required
+                        hint="8 dígitos, ej. 8855-9869"
+                        error={
+                          form.phone && phoneDigits(form.phone).length !== 8
+                            ? "El teléfono debe tener 8 dígitos."
+                            : null
+                        }
+                      >
                         <Input
                           id="phone"
                           required
+                          type="tel"
+                          inputMode="numeric"
+                          autoComplete="tel"
+                          maxLength={9}
                           value={form.phone}
-                          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                          placeholder="8888-7777"
+                          onChange={(e) =>
+                            setForm({ ...form, phone: formatPhone(e.target.value) })
+                          }
+                          placeholder="8855-9869"
                         />
                       </Field>
                       <Field
@@ -321,7 +348,10 @@ export default function BookingWizardPage() {
                   <Button
                     onClick={submit}
                     disabled={
-                      submitting || !form.name || !form.phone || !form.email
+                      submitting ||
+                      !form.name ||
+                      phoneDigits(form.phone).length !== 8 ||
+                      !form.email
                     }
                   >
                     {submitting ? "Reservando…" : "Confirmar reserva"}

@@ -27,13 +27,17 @@ class AppointmentConfirmationMail extends Mailable implements ShouldQueue
         $tz = (string) config('agenda.timezone');
         $start = CarbonImmutable::parse($this->appointment->starts_at)->setTimezone($tz);
 
+        // El enlace va al FRONTEND (Next.js), no a la API: exponer la URL de la
+        // API en el correo filtraría un detalle interno.
+        $frontend = rtrim((string) config('agenda.frontend_url'), '/');
+
         return new Content(
             markdown: 'mail.appointments.confirmation',
             with: [
                 'appointment' => $this->appointment,
                 'date' => $start->isoFormat('dddd D [de] MMMM, YYYY'),
                 'time' => $start->format('H:i'),
-                'url' => route('booking.show', $this->appointment->public_token),
+                'url' => $frontend.'/cita/'.$this->appointment->public_token,
             ],
         );
     }

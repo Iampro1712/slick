@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -17,6 +18,19 @@ return Application::configure(basePath: dirname(__DIR__))
             'owner' => \App\Http\Middleware\EnsureUserIsOwner::class,
             'business' => \App\Http\Middleware\EnsureBusinessAccess::class,
         ]);
+
+        // El contenedor solo recibe tráfico del reverse proxy de Dokploy
+        // (Traefik), que termina el TLS y reenvía HTTP plano puerto 8080. Sin
+        // esto, Laravel no detecta la petición original como HTTPS (afecta
+        // cookies seguras y URLs generadas fuera de un request, p. ej. en
+        // colas). '*' es seguro aquí: no hay tráfico directo a la app.
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO,
+        );
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

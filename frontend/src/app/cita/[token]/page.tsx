@@ -127,7 +127,7 @@ export default function AppointmentPage({
                 <Avatar name={appointment.staff} />
                 <div>
                   <p className="text-sm font-medium text-ink">{appointment.staff}</p>
-                  <p className="text-xs text-muted">Profesional</p>
+                  <p className="text-xs text-muted">Barbero</p>
                 </div>
               </div>
               <div className="mt-4">

@@ -5,7 +5,7 @@ Hola {{ $appointment->client->name }}, te recordamos tu próxima cita:
 
 <x-mail::panel>
 **Servicio:** {{ $appointment->service->name }}
-**Profesional:** {{ $appointment->staffMember->name }}
+**Barbero:** {{ $appointment->staffMember->name }}
 **Fecha:** {{ $date }}
 **Hora:** {{ $time }}
 </x-mail::panel>

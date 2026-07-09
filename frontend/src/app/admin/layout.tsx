@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth";
 import { roleHome } from "@/lib/roles";
 import { Spinner } from "@/components/ui";
 import { PanelShell, type PanelNavItem } from "@/components/PanelShell";
+import { BRAND } from "@/lib/brand";
 
 const NAV: PanelNavItem[] = [
   {
@@ -87,7 +88,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <PanelShell
       title="Plataforma"
-      subtitle="Slick"
+      subtitle={BRAND.name}
       roleLabel="Admin"
       navItems={NAV}
     >

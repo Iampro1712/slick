@@ -104,13 +104,14 @@ class ReminderTest extends TestCase
         ]);
         $this->service->staffMembers()->attach($this->staff->id);
 
-        $monday = CarbonImmutable::parse('2026-07-06', 'America/Managua');
+        $monday = CarbonImmutable::now('America/Managua')->next(CarbonImmutable::MONDAY);
 
         $this->postJson(route('booking.store'), [
             'service_id' => $this->service->id,
             'staff_member_id' => $this->staff->id,
             'starts_at' => $monday->setTimeFromTimeString('10:00:00')->utc()->toIso8601String(),
             'name' => 'Cliente Correo',
+            'phone' => '8888-8888',
             'email' => 'nuevo@correo.test',
         ])->assertCreated();
 

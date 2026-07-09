@@ -7,11 +7,12 @@ import { api } from "@/lib/client";
 import type { Service } from "@/lib/types";
 import { PublicNav } from "@/components/PublicNav";
 import { Avatar, Card, Spinner, StatusBadge, cx } from "@/components/ui";
+import { BRAND } from "@/lib/brand";
 
 const STEPS = [
   {
-    title: "Elige servicio y profesional",
-    text: "Mira lo que ofrecemos y con quién quieres tu cita.",
+    title: "Elige tu servicio",
+    text: "Mira lo que ofrecemos y elige lo que necesitas.",
     icon: SparkIcon,
   },
   {
@@ -33,8 +34,8 @@ const BENEFITS = [
     icon: BoltIcon,
   },
   {
-    title: "Elige a tu profesional",
-    text: "Selecciona con quién quieres tu cita, o deja que te asignemos el primer hueco libre.",
+    title: "Horarios reales",
+    text: "Solo ves los huecos libres de verdad; nada de reservar y que te digan que no hay.",
     icon: UserIcon,
   },
   {
@@ -74,22 +75,22 @@ export default function LandingPage() {
           {/* Columna de texto */}
           <div className="text-left">
             <span className="motion-safe:animate-[fade-up_0.5s_ease-out_both] inline-flex items-center gap-2 rounded-md border border-line bg-surface px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-muted">
-              Para negocios de servicios
+              Barbería · Solo con cita
             </span>
 
             <h1
               style={{ animationDelay: "80ms" }}
               className="motion-safe:animate-[fade-up_0.5s_ease-out_both] mt-5 max-w-xl text-4xl font-semibold leading-[1.1] tracking-tight text-ink sm:text-5xl"
             >
-              Tu agenda, ordenada de una vez.
+              Reserva tu corte en {BRAND.name}.
             </h1>
 
             <p
               style={{ animationDelay: "160ms" }}
               className="motion-safe:animate-[fade-up_0.5s_ease-out_both] mt-5 max-w-md text-lg text-muted"
             >
-              Elige servicio, profesional y horario en menos de un minuto.
-              Cada cita queda confirmada al instante — sin llamadas, sin idas
+              Elige el servicio y la hora que te queda en menos de un minuto.
+              Tu cita queda confirmada al instante — sin llamadas, sin idas
               y vueltas.
             </p>
 
@@ -150,10 +151,10 @@ export default function LandingPage() {
               </div>
 
               <div className="mt-4 flex items-center gap-3">
-                <Avatar name="Ana Martínez" className="size-11 text-sm" />
+                <Avatar name="Contreras" className="size-11 text-sm" />
                 <div>
-                  <p className="font-semibold text-ink">Corte + Barba</p>
-                  <p className="text-sm text-muted">con Ana Martínez</p>
+                  <p className="font-semibold text-ink">Corte + barba</p>
+                  <p className="text-sm text-muted">con Contreras</p>
                 </div>
               </div>
 
@@ -323,7 +324,7 @@ export default function LandingPage() {
 
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-5 py-8 text-sm text-muted sm:flex-row sm:justify-between">
-          <span>© 2026 Slick</span>
+          <span>© {BRAND.year} {BRAND.name}</span>
           <Link
             href="/reservar"
             className="font-medium text-primary transition hover:text-primary-hover focus-visible:outline-none"

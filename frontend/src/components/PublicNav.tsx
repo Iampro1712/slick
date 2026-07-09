@@ -8,6 +8,7 @@ import { useConfirm } from "@/lib/confirm";
 import { useToast } from "@/lib/toast";
 import { Avatar, BrandMark, Button, cx } from "@/components/ui";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { BRAND } from "@/lib/brand";
 
 /**
  * Barra superior de las pantallas públicas (landing, reserva, confirmación).
@@ -48,7 +49,7 @@ export function PublicNav({ cta = true }: { cta?: boolean }) {
         >
           <BrandMark className="size-8" />
           <span className="text-base font-semibold tracking-tight text-ink sm:text-lg">
-            Slick
+            {BRAND.name}
           </span>
         </Link>
 

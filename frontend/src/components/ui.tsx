@@ -206,7 +206,7 @@ export function Pill({
 
 /* ── Marca / identidad ──────────────────────────────────────────────────── */
 
-/** Icono de calendario de la marca, sobre cuadro teal. */
+/** Icono de tijeras de barbería, sobre cuadro de la marca. */
 export function BrandMark({ className }: { className?: string }) {
   return (
     <span
@@ -216,12 +216,16 @@ export function BrandMark({ className }: { className?: string }) {
       )}
     >
       <svg viewBox="0 0 24 24" fill="none" className="size-[55%]" aria-hidden>
-        <path
-          d="M7 3v3M17 3v3M4 9h16M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z"
+        <g
           stroke="currentColor"
           strokeWidth="1.8"
           strokeLinecap="round"
-        />
+          strokeLinejoin="round"
+        >
+          <circle cx="6" cy="6" r="2.5" />
+          <circle cx="6" cy="18" r="2.5" />
+          <path d="M20 4 8.5 15.5M14.5 14.5 20 20M8.5 8.5 12 12" />
+        </g>
       </svg>
     </span>
   );

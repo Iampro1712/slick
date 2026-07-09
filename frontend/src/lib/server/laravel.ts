@@ -59,7 +59,19 @@ export async function laravel<T = unknown>(
   }
 
   if (auth) {
-    const token = (await cookies()).get(TOKEN_COOKIE)?.value;
+    const raw = (await cookies()).get(TOKEN_COOKIE)?.value;
+    // El token Sanctum tiene formato "id|texto". Al escribir la cookie, Next
+    // codifica el "|" como %7C, pero al leerla NO lo decodifica: sin esto,
+    // Laravel recibe "10%7C..." en vez de "10|..." y responde 401. decode es
+    // seguro aquí (el token solo contiene "|" y caracteres alfanuméricos).
+    let token = raw;
+    if (raw) {
+      try {
+        token = decodeURIComponent(raw);
+      } catch {
+        token = raw;
+      }
+    }
     if (token) headers["Authorization"] = `Bearer ${token}`;
   }
 

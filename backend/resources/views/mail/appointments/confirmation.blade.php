@@ -5,7 +5,7 @@ Hola {{ $appointment->client->name }}, tu cita ha quedado registrada con estos d
 
 <x-mail::panel>
 **Servicio:** {{ $appointment->service->name }}
-**Profesional:** {{ $appointment->staffMember->name }}
+**Barbero:** {{ $appointment->staffMember->name }}
 **Fecha:** {{ $date }}
 **Hora:** {{ $time }}
 </x-mail::panel>

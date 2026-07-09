@@ -30,7 +30,9 @@ class BookingTest extends TestCase
     {
         parent::setUp();
 
-        $this->date = CarbonImmutable::parse('2026-07-06', self::TZ); // lunes
+        // Próximo lunes (siempre en el futuro): coincide con el horario laboral
+        // del staff (weekday = 1) y evita que los huecos queden en el pasado.
+        $this->date = CarbonImmutable::now(self::TZ)->next(CarbonImmutable::MONDAY);
         $this->service = Service::factory()->create(['duration_min' => 60, 'buffer_min' => 0]);
         $this->staff = StaffMember::factory()->create();
         WorkingHour::factory()->for($this->staff)->create([
@@ -86,6 +88,7 @@ class BookingTest extends TestCase
             'starts_at' => $this->slotAt('10:00:00'),
             'name' => 'Cliente Prueba',
             'phone' => '8888-8888',
+            'email' => 'cliente@prueba.test',
         ]);
 
         $response->assertCreated()->assertJsonStructure(['appointment' => ['token', 'status']]);
@@ -118,6 +121,7 @@ class BookingTest extends TestCase
             'starts_at' => $this->slotAt('10:00:00'),
             'name' => 'Segundo Cliente',
             'phone' => '7777-7777',
+            'email' => 'segundo@prueba.test',
         ]);
 
         $response->assertStatus(409);
@@ -144,6 +148,7 @@ class BookingTest extends TestCase
             'starts_at' => $this->slotAt('11:00:00'),
             'name' => 'Cliente Prueba',
             'phone' => '8888-8888',
+            'email' => 'cliente@prueba.test',
         ]);
 
         $response->assertStatus(409)->assertJsonPath('code', 'duplicate_active_booking');
@@ -168,6 +173,7 @@ class BookingTest extends TestCase
             'starts_at' => $this->slotAt('11:00:00'),
             'name' => 'Cliente Prueba',
             'phone' => '8888-8888',
+            'email' => 'cliente@prueba.test',
         ])->assertCreated();
     }
 
@@ -192,7 +198,29 @@ class BookingTest extends TestCase
             'starts_at' => $this->slotAt('11:00:00'),
             'name' => 'Cliente Prueba',
             'phone' => '8888-8888',
+            'email' => 'cliente@prueba.test',
         ])->assertCreated();
+    }
+
+    public function test_exige_telefono_y_email_al_reservar(): void
+    {
+        $this->login();
+        $base = [
+            'service_id' => $this->service->id,
+            'staff_member_id' => $this->staff->id,
+            'starts_at' => $this->slotAt('10:00:00'),
+            'name' => 'Cliente Prueba',
+        ];
+
+        // Sin email → 422.
+        $this->postJson(route('booking.store'), $base + ['phone' => '8888-8888'])
+            ->assertStatus(422)->assertJsonValidationErrorFor('email');
+
+        // Sin teléfono → 422.
+        $this->postJson(route('booking.store'), $base + ['email' => 'cliente@prueba.test'])
+            ->assertStatus(422)->assertJsonValidationErrorFor('phone');
+
+        $this->assertSame(0, Appointment::count());
     }
 
     public function test_se_puede_cancelar_una_cita_por_su_token(): void

@@ -21,9 +21,10 @@ class StoreBookingRequest extends FormRequest
             'staff_member_id' => ['nullable', 'integer', 'exists:staff_members,id'],
             'starts_at' => ['required', 'date'],
             'name' => ['required', 'string', 'max:255'],
-            // Se exige al menos un dato de contacto (teléfono o email).
-            'phone' => ['nullable', 'required_without:email', 'string', 'max:30'],
-            'email' => ['nullable', 'required_without:phone', 'email', 'max:255'],
+            // Teléfono y email son obligatorios: el teléfono para contactar al
+            // cliente ante cambios, el email para la confirmación y el recordatorio.
+            'phone' => ['required', 'string', 'max:30'],
+            'email' => ['required', 'email', 'max:255'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
@@ -34,8 +35,8 @@ class StoreBookingRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'phone.required_without' => 'Indica un teléfono o un correo de contacto.',
-            'email.required_without' => 'Indica un correo o un teléfono de contacto.',
+            'phone.required' => 'Indica un teléfono de contacto.',
+            'email.required' => 'Indica un correo para la confirmación.',
         ];
     }
 }

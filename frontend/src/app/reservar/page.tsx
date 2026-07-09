@@ -20,7 +20,7 @@ import {
   cx,
 } from "@/components/ui";
 
-const STEPS = ["Servicio", "Profesional", "Fecha y hora", "Tus datos"];
+const STEPS = ["Servicio", "Fecha y hora", "Tus datos"];
 
 function todayISO(): string {
   const d = new Date();
@@ -48,7 +48,6 @@ export default function BookingWizardPage() {
   const [loadingServices, setLoadingServices] = useState(true);
 
   const [serviceId, setServiceId] = useState<number | null>(null);
-  const [staffId, setStaffId] = useState<number | null>(null);
   const [date, setDate] = useState(todayISO());
 
   const [slots, setSlots] = useState<Slot[]>([]);
@@ -60,9 +59,6 @@ export default function BookingWizardPage() {
   const [error, setError] = useState<string | null>(null);
 
   const service = services.find((s) => s.id === serviceId) ?? null;
-  const staffName =
-    service?.staff.find((s) => s.id === staffId)?.name ??
-    (staffId === null ? "Cualquiera" : null);
   const slotLabel = slots.find((s) => s.value === slot)?.label ?? null;
 
   useEffect(() => {
@@ -89,16 +85,15 @@ export default function BookingWizardPage() {
     setSlot(null);
     setLoadingSlots(true);
     api.booking
-      .slots(serviceId, date, staffId)
+      .slots(serviceId, date, null)
       .then(({ slots }) => setSlots(slots))
       .catch(() => setSlots([]))
       .finally(() => setLoadingSlots(false));
-  }, [serviceId, staffId, date]);
+  }, [serviceId, date]);
 
   const canContinue = useMemo(() => {
     if (step === 0) return serviceId !== null;
-    if (step === 1) return true; // profesional opcional
-    if (step === 2) return slot !== null;
+    if (step === 1) return slot !== null;
     return false;
   }, [step, serviceId, slot]);
 
@@ -109,7 +104,7 @@ export default function BookingWizardPage() {
     try {
       const { appointment } = await api.booking.create({
         service_id: serviceId,
-        staff_member_id: staffId,
+        staff_member_id: null,
         starts_at: slot,
         name: form.name,
         phone: form.phone || undefined,
@@ -123,10 +118,10 @@ export default function BookingWizardPage() {
         toast(err.message, "error");
       } else if (err instanceof ApiError && err.status === 409) {
         setError("Ese horario se acaba de ocupar. Elige otro, por favor.");
-        const { slots } = await api.booking.slots(serviceId, date, staffId);
+        const { slots } = await api.booking.slots(serviceId, date, null);
         setSlots(slots);
         setSlot(null);
-        setStep(2);
+        setStep(1);
       } else if (err instanceof ApiError && err.errors) {
         setError(Object.values(err.errors).flat()[0] ?? err.message);
       } else {
@@ -181,10 +176,7 @@ export default function BookingWizardPage() {
                         <button
                           key={s.id}
                           type="button"
-                          onClick={() => {
-                            setServiceId(s.id);
-                            setStaffId(null);
-                          }}
+                          onClick={() => setServiceId(s.id)}
                           className={cx(
                             "rounded-xl border p-4 text-left transition",
                             serviceId === s.id
@@ -206,47 +198,8 @@ export default function BookingWizardPage() {
                 </Step>
               )}
 
-              {/* Paso 2: Profesional */}
+              {/* Paso 2: Fecha y hora */}
               {step === 1 && service && (
-                <Step title="Elige profesional">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <button
-                      type="button"
-                      onClick={() => setStaffId(null)}
-                      className={cx(
-                        "rounded-xl border p-4 text-left transition",
-                        staffId === null
-                          ? "border-primary bg-surface-tint ring-2 ring-primary/30"
-                          : "border-line bg-surface hover:border-line-strong"
-                      )}
-                    >
-                      <div className="font-semibold text-ink">Cualquiera</div>
-                      <p className="mt-1 text-sm text-muted">
-                        El primer hueco disponible.
-                      </p>
-                    </button>
-                    {service.staff.map((st) => (
-                      <button
-                        key={st.id}
-                        type="button"
-                        onClick={() => setStaffId(st.id)}
-                        className={cx(
-                          "rounded-xl border p-4 text-left transition",
-                          staffId === st.id
-                            ? "border-primary bg-surface-tint ring-2 ring-primary/30"
-                            : "border-line bg-surface hover:border-line-strong"
-                        )}
-                      >
-                        <div className="font-semibold text-ink">{st.name}</div>
-                        <p className="mt-1 text-sm text-muted">Profesional</p>
-                      </button>
-                    ))}
-                  </div>
-                </Step>
-              )}
-
-              {/* Paso 3: Fecha y hora */}
-              {step === 2 && service && (
                 <Step title="Elige fecha y hora">
                   <Field label="Fecha" htmlFor="date">
                     <Input
@@ -291,8 +244,8 @@ export default function BookingWizardPage() {
                 </Step>
               )}
 
-              {/* Paso 4: Datos */}
-              {step === 3 && (
+              {/* Paso 3: Datos */}
+              {step === 2 && (
                 <Step title="Tus datos">
                   <form
                     onSubmit={(e) => {
@@ -311,18 +264,25 @@ export default function BookingWizardPage() {
                       />
                     </Field>
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <Field label="Teléfono" htmlFor="phone">
+                      <Field label="Teléfono" htmlFor="phone" required>
                         <Input
                           id="phone"
+                          required
                           value={form.phone}
                           onChange={(e) => setForm({ ...form, phone: e.target.value })}
                           placeholder="8888-7777"
                         />
                       </Field>
-                      <Field label="Email" htmlFor="email" hint="Para la confirmación.">
+                      <Field
+                        label="Email"
+                        htmlFor="email"
+                        required
+                        hint="Para la confirmación."
+                      >
                         <Input
                           id="email"
                           type="email"
+                          required
                           value={form.email}
                           onChange={(e) => setForm({ ...form, email: e.target.value })}
                           placeholder="tu@email.com"
@@ -353,12 +313,17 @@ export default function BookingWizardPage() {
                 >
                   ← Atrás
                 </Button>
-                {step < 3 ? (
+                {step < 2 ? (
                   <Button onClick={() => setStep((s) => s + 1)} disabled={!canContinue}>
                     Continuar
                   </Button>
                 ) : (
-                  <Button onClick={submit} disabled={submitting || !form.name}>
+                  <Button
+                    onClick={submit}
+                    disabled={
+                      submitting || !form.name || !form.phone || !form.email
+                    }
+                  >
                     {submitting ? "Reservando…" : "Confirmar reserva"}
                   </Button>
                 )}
@@ -374,7 +339,6 @@ export default function BookingWizardPage() {
               </h2>
               <dl className="mt-4 space-y-3 text-sm">
                 <SummaryRow label="Servicio" value={service?.name} />
-                <SummaryRow label="Profesional" value={staffName} />
                 <SummaryRow
                   label="Fecha"
                   value={service ? date : null}

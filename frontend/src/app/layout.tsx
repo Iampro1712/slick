@@ -5,6 +5,7 @@ import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider, themeInitScript } from "@/lib/theme";
 import { ConfirmProvider } from "@/lib/confirm";
 import { ToastProvider } from "@/lib/toast";
+import { BRAND } from "@/lib/brand";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -13,8 +14,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Slick",
-  description: "Reserva tu cita en línea.",
+  title: BRAND.name,
+  description: BRAND.tagline,
 };
 
 export default function RootLayout({

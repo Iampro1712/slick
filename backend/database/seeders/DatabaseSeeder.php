@@ -12,7 +12,8 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database con un negocio de ejemplo (una barbería).
+     * Seed the application's database con la barbería de ejemplo (Barbería
+     * Contreras): un solo barbero que atiende únicamente con cita previa.
      */
     public function run(): void
     {
@@ -23,61 +24,74 @@ class DatabaseSeeder extends Seeder
             'role' => \App\Enums\UserRole::Admin,
         ]);
 
-        // Dueño del negocio: configura servicios y profesionales (contraseña: password).
+        // Dueño del negocio (es el mismo barbero): configura servicios y agenda.
         User::factory()->create([
-            'name' => 'Dueño Demo',
+            'name' => 'Contreras',
             'email' => 'dueno@agenda.test',
             'role' => \App\Enums\UserRole::Owner,
         ]);
 
-        // Servicios que ofrece el negocio.
+        // Servicios típicos de una barbería en Nicaragua.
         $corte = Service::factory()->create([
             'name' => 'Corte de cabello',
-            'description' => 'Corte clásico con máquina y tijera.',
+            'description' => 'Corte a máquina y tijera, lavado y peinado.',
             'duration_min' => 30,
             'buffer_min' => 10,
         ]);
 
-        $barba = Service::factory()->create([
+        $corteBarba = Service::factory()->create([
             'name' => 'Corte + barba',
-            'description' => 'Corte de cabello y arreglo de barba.',
+            'description' => 'Corte completo más perfilado de barba con navaja.',
             'duration_min' => 45,
-            'buffer_min' => 15,
+            'buffer_min' => 10,
         ]);
 
-        $tinte = Service::factory()->create([
-            'name' => 'Tinte',
-            'description' => 'Aplicación de color.',
-            'duration_min' => 90,
-            'buffer_min' => 15,
+        $barba = Service::factory()->create([
+            'name' => 'Arreglo de barba',
+            'description' => 'Perfilado y afeitado de barba con toalla caliente.',
+            'duration_min' => 20,
+            'buffer_min' => 5,
         ]);
 
-        // Profesionales y sus horarios (lunes a sábado).
-        $ana = StaffMember::factory()->create(['name' => 'Ana Martínez']);
-        $luis = StaffMember::factory()->create(['name' => 'Luis Hernández']);
+        $nino = Service::factory()->create([
+            'name' => 'Corte infantil',
+            'description' => 'Corte para niños (menores de 12 años).',
+            'duration_min' => 25,
+            'buffer_min' => 10,
+        ]);
 
-        // Usuario con rol staff vinculado a Ana: verá sólo su agenda (contraseña: password).
+        $diseno = Service::factory()->create([
+            'name' => 'Diseño / líneas',
+            'description' => 'Corte con diseño a mano alzada (freestyle).',
+            'duration_min' => 40,
+            'buffer_min' => 10,
+        ]);
+
+        // El único barbero del negocio.
+        $contreras = StaffMember::factory()->create(['name' => 'Contreras']);
+
+        // Usuario con rol staff vinculado al barbero: verá su agenda del día.
         User::factory()->create([
-            'name' => 'Ana Martínez',
-            'email' => 'ana@agenda.test',
+            'name' => 'Contreras',
+            'email' => 'barbero@agenda.test',
             'role' => \App\Enums\UserRole::Staff,
-            'staff_member_id' => $ana->id,
+            'staff_member_id' => $contreras->id,
         ]);
 
-        // Ana: lunes a viernes 9–13 y 14–18.
-        foreach (range(1, 5) as $weekday) {
-            WorkingHour::factory()->for($ana)->onWeekday($weekday)->between('09:00:00', '13:00:00')->create();
-            WorkingHour::factory()->for($ana)->onWeekday($weekday)->between('14:00:00', '18:00:00')->create();
+        // Horario: lunes a sábado, 8–12 y 13–18 (almuerzo de 12 a 13).
+        foreach (range(1, 6) as $weekday) {
+            WorkingHour::factory()->for($contreras)->onWeekday($weekday)->between('08:00:00', '12:00:00')->create();
+            WorkingHour::factory()->for($contreras)->onWeekday($weekday)->between('13:00:00', '18:00:00')->create();
         }
 
-        // Luis: martes a sábado 10–19 corrido.
-        foreach (range(2, 6) as $weekday) {
-            WorkingHour::factory()->for($luis)->onWeekday($weekday)->between('10:00:00', '19:00:00')->create();
-        }
-
-        // Qué servicios da cada profesional.
-        $ana->services()->attach([$corte->id, $barba->id, $tinte->id]);
-        $luis->services()->attach([$corte->id, $barba->id]);
+        // El barbero ofrece todos los servicios.
+        $contreras->services()->attach([
+            $corte->id,
+            $corteBarba->id,
+            $barba->id,
+            $nino->id,
+            $diseno->id,
+        ]);
 
         // Algunos clientes de ejemplo.
         Client::factory(5)->create();

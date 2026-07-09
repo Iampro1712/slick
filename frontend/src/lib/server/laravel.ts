@@ -1,6 +1,6 @@
 import "server-only";
 
-import { cookies, headers as nextHeaders } from "next/headers";
+import { headers as nextHeaders } from "next/headers";
 
 /**
  * Helper SERVER-ONLY para hablar con la API de Laravel.
@@ -59,17 +59,22 @@ export async function laravel<T = unknown>(
   }
 
   if (auth) {
-    const raw = (await cookies()).get(TOKEN_COOKIE)?.value;
     // El token Sanctum tiene formato "id|texto". Al escribir la cookie, Next
-    // codifica el "|" como %7C, pero al leerla NO lo decodifica: sin esto,
-    // Laravel recibe "10%7C..." en vez de "10|..." y responde 401. decode es
-    // seguro aquí (el token solo contiene "|" y caracteres alfanuméricos).
-    let token = raw;
-    if (raw) {
+    // codifica el "|" como %7C; pero `cookies().get().value` no lo decodifica de
+    // forma fiable en producción, así que Laravel recibía "10%7C..." en vez de
+    // "10|..." y respondía 401. Para no depender de ese comportamiento, se lee
+    // el token del header Cookie crudo y se decodifica explícitamente (seguro:
+    // el token solo contiene "|" y caracteres alfanuméricos).
+    const cookieHeader = incoming.get("cookie") ?? "";
+    const match = cookieHeader.match(
+      new RegExp(`(?:^|;\\s*)${TOKEN_COOKIE}=([^;]+)`)
+    );
+    let token: string | undefined;
+    if (match) {
       try {
-        token = decodeURIComponent(raw);
+        token = decodeURIComponent(match[1]);
       } catch {
-        token = raw;
+        token = match[1];
       }
     }
     if (token) headers["Authorization"] = `Bearer ${token}`;

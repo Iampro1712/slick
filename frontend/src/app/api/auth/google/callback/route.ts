@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 import { laravel, TOKEN_COOKIE } from "@/lib/server/laravel";
 import { roleHome } from "@/lib/roles";
@@ -37,10 +38,17 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/cuenta?linked=google", request.url));
   }
 
-  // Login/registro: guarda el token y va al panel/inicio del rol.
-  const res = NextResponse.redirect(new URL(roleHome(data.user), request.url));
+  // Login/registro: guarda el token en la cookie httpOnly y va al inicio del rol.
+  //
+  // La cookie se fija con el cookie store de `next/headers`, NO con
+  // `res.cookies.set()` sobre el NextResponse.redirect(): en producción, el
+  // Set-Cookie adjuntado directamente a una respuesta de redirección no
+  // persistía en el navegador (el login normal usa NextResponse.json y sí
+  // funciona). El cookie store adjunta el Set-Cookie a la respuesta final,
+  // incluida la redirección, de forma fiable (patrón recomendado en Next 16).
   if (data.token) {
-    res.cookies.set(TOKEN_COOKIE, data.token, {
+    const cookieStore = await cookies();
+    cookieStore.set(TOKEN_COOKIE, data.token, {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
@@ -48,5 +56,5 @@ export async function GET(request: Request) {
       maxAge: 60 * 60 * 24 * 7, // 7 días
     });
   }
-  return res;
+  return NextResponse.redirect(new URL(roleHome(data.user), request.url));
 }

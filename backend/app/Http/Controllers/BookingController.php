@@ -15,6 +15,7 @@ use App\Services\AvailabilityService;
 use App\Services\BookingService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
 class BookingController extends Controller
@@ -120,27 +121,21 @@ class BookingController extends Controller
     }
 
     /**
-     * Ver una cita por su token público.
+     * Ver una cita por su token. Exige sesión y ser el dueño (o rol del negocio).
      */
-    public function show(string $token): JsonResponse
+    public function show(Request $request, string $token): JsonResponse
     {
-        $appointment = Appointment::query()
-            ->where('public_token', $token)
-            ->with(['service', 'staffMember', 'client'])
-            ->firstOrFail();
+        $appointment = $this->findOwnedOrFail($request, $token);
 
         return response()->json(['appointment' => $this->present($appointment)]);
     }
 
     /**
-     * Cancela una cita desde su token público.
+     * Cancela una cita. Exige sesión y ser el dueño (o rol del negocio).
      */
-    public function cancel(string $token): JsonResponse
+    public function cancel(Request $request, string $token): JsonResponse
     {
-        $appointment = Appointment::query()
-            ->where('public_token', $token)
-            ->with(['service', 'staffMember', 'client'])
-            ->firstOrFail();
+        $appointment = $this->findOwnedOrFail($request, $token);
 
         if ($this->isCancellable($appointment)) {
             $appointment->update(['status' => AppointmentStatus::Cancelled]);
@@ -148,6 +143,27 @@ class BookingController extends Controller
         }
 
         return response()->json(['appointment' => $this->present($appointment)]);
+    }
+
+    /**
+     * Busca la cita por token y autoriza el acceso: el cliente solo puede ver o
+     * cancelar SUS propias citas; los roles del negocio (admin, dueño, staff)
+     * pueden gestionar cualquiera. Se responde 404 —no 403— cuando no pertenece,
+     * para no revelar la existencia de la cita a quien no es su dueño (evita IDOR).
+     */
+    private function findOwnedOrFail(Request $request, string $token): Appointment
+    {
+        $appointment = Appointment::query()
+            ->where('public_token', $token)
+            ->with(['service', 'staffMember', 'client'])
+            ->firstOrFail();
+
+        $user = $request->user();
+        if (! $user->hasBusinessAccess() && $appointment->user_id !== $user->id) {
+            abort(404);
+        }
+
+        return $appointment;
     }
 
     /**

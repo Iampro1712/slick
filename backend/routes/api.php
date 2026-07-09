@@ -27,8 +27,8 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     |----------------------------------------------------------------------
     | Reserva
     |----------------------------------------------------------------------
-    | Servicios, huecos y ver/cancelar por token son públicos. Crear una
-    | reserva requiere sesión iniciada (el frontend redirige al login si no).
+    | Servicios y huecos son públicos. Crear, ver y cancelar una reserva
+    | requieren sesión; ver/cancelar además exigen ser el dueño de la cita.
     */
     Route::prefix('booking')->group(function () {
         Route::get('services', [BookingController::class, 'services'])->name('booking.services');
@@ -36,8 +36,12 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::post('/', [BookingController::class, 'store'])
             ->middleware(['auth:sanctum', 'throttle:booking'])
             ->name('booking.store');
-        Route::get('{token}', [BookingController::class, 'show'])->name('booking.show');
-        Route::delete('{token}', [BookingController::class, 'cancel'])->name('booking.cancel');
+        // Ver/cancelar una cita exige sesión: solo el dueño de la cita (o un
+        // rol del negocio) puede hacerlo. El token por sí solo no basta.
+        Route::get('{token}', [BookingController::class, 'show'])
+            ->middleware('auth:sanctum')->name('booking.show');
+        Route::delete('{token}', [BookingController::class, 'cancel'])
+            ->middleware('auth:sanctum')->name('booking.cancel');
     });
 
     /*

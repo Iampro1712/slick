@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\AppointmentStatus;
+use App\Enums\UserRole;
 use App\Models\Appointment;
 use App\Models\Client;
 use App\Models\Service;
@@ -244,9 +245,10 @@ class BookingTest extends TestCase
             ->assertCreated();
     }
 
-    public function test_se_puede_cancelar_una_cita_por_su_token(): void
+    /** Crea una cita a las 10:00 propiedad del usuario dado (o sin dueño). */
+    private function appointmentFor(?User $user): Appointment
     {
-        $appointment = Appointment::factory()
+        return Appointment::factory()
             ->for($this->staff)
             ->for($this->service)
             ->for(Client::factory())
@@ -255,10 +257,61 @@ class BookingTest extends TestCase
                 $this->date->setTimeFromTimeString('10:00:00')->utc(),
                 $this->date->setTimeFromTimeString('11:00:00')->utc(),
             )
-            ->create();
+            ->create($user ? ['user_id' => $user->id] : []);
+    }
+
+    public function test_el_dueno_puede_cancelar_su_cita(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $appointment = $this->appointmentFor($user);
 
         $this->deleteJson(route('booking.cancel', $appointment->public_token))->assertOk();
 
         $this->assertSame(AppointmentStatus::Cancelled, $appointment->fresh()->status);
+    }
+
+    public function test_el_dueno_puede_ver_su_cita(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $appointment = $this->appointmentFor($user);
+
+        $this->getJson(route('booking.show', $appointment->public_token))
+            ->assertOk()
+            ->assertJsonPath('appointment.token', $appointment->public_token);
+    }
+
+    public function test_no_permite_ver_una_cita_sin_iniciar_sesion(): void
+    {
+        $appointment = $this->appointmentFor(User::factory()->create());
+
+        $this->getJson(route('booking.show', $appointment->public_token))
+            ->assertUnauthorized();
+    }
+
+    public function test_no_permite_ver_la_cita_de_otro_usuario(): void
+    {
+        $owner = User::factory()->create();
+        $appointment = $this->appointmentFor($owner);
+
+        // Otro cliente, con el token en mano, no puede verla ni cancelarla (404).
+        $intruder = User::factory()->create();
+        Sanctum::actingAs($intruder);
+
+        $this->getJson(route('booking.show', $appointment->public_token))->assertNotFound();
+        $this->deleteJson(route('booking.cancel', $appointment->public_token))->assertNotFound();
+        $this->assertSame(AppointmentStatus::Pending, $appointment->fresh()->status);
+    }
+
+    public function test_un_rol_del_negocio_puede_ver_cualquier_cita(): void
+    {
+        $client = User::factory()->create();
+        $appointment = $this->appointmentFor($client);
+
+        $owner = User::factory()->create(['role' => UserRole::Owner]);
+        Sanctum::actingAs($owner);
+
+        $this->getJson(route('booking.show', $appointment->public_token))->assertOk();
     }
 }

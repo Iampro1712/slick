@@ -2,8 +2,10 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { api } from "@/lib/client";
+import { ApiError } from "@/lib/errors";
 import { useConfirm } from "@/lib/confirm";
 import type { AppointmentView } from "@/lib/types";
 import { PublicNav } from "@/components/PublicNav";
@@ -16,6 +18,7 @@ export default function AppointmentPage({
 }) {
   const { token } = use(params);
   const confirm = useConfirm();
+  const router = useRouter();
 
   const [appointment, setAppointment] = useState<AppointmentView | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,9 +28,18 @@ export default function AppointmentPage({
     api.booking
       .show(token)
       .then(({ appointment }) => setAppointment(appointment))
-      .catch(() => setNotFound(true))
+      .catch((err) => {
+        // Sin sesión: la cita es privada; manda al login y regresa aquí.
+        if (err instanceof ApiError && err.status === 401) {
+          router.replace(`/login?next=/cita/${token}`);
+          return;
+        }
+        // No es tuya o no existe (404): no revelamos cuál de las dos.
+        setNotFound(true);
+        setLoading(false);
+      })
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, router]);
 
   async function cancel() {
     await confirm({

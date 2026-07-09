@@ -4,9 +4,9 @@
 Hola {{ $appointment->client->name }}, tu cita ha quedado registrada con estos datos:
 
 <x-mail::panel>
-**Servicio:** {{ $appointment->service->name }}
-**Barbero:** {{ $appointment->staffMember->name }}
-**Fecha:** {{ $date }}
+**Servicio:** {{ $appointment->service->name }}<br>
+**Barbero:** {{ $appointment->staffMember->name }}<br>
+**Fecha:** {{ $date }}<br>
 **Hora:** {{ $time }}
 </x-mail::panel>
 

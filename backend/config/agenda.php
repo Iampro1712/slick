@@ -15,6 +15,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | URL pública del frontend (Next.js)
+    |--------------------------------------------------------------------------
+    |
+    | Los enlaces que se envían al cliente (p. ej. "Ver mi cita" en los correos)
+    | deben apuntar al frontend, NUNCA a la API: exponer la URL de la API en un
+    | correo filtra un detalle interno. Se lee de config (no env() directo) para
+    | que funcione con config:cache en producción.
+    |
+    */
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Motor de disponibilidad
     |--------------------------------------------------------------------------
     |

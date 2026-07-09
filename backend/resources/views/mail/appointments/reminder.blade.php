@@ -4,9 +4,9 @@
 Hola {{ $appointment->client->name }}, te recordamos tu próxima cita:
 
 <x-mail::panel>
-**Servicio:** {{ $appointment->service->name }}
-**Barbero:** {{ $appointment->staffMember->name }}
-**Fecha:** {{ $date }}
+**Servicio:** {{ $appointment->service->name }}<br>
+**Barbero:** {{ $appointment->staffMember->name }}<br>
+**Fecha:** {{ $date }}<br>
 **Hora:** {{ $time }}
 </x-mail::panel>
 

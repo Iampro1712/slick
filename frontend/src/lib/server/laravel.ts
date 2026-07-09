@@ -10,7 +10,24 @@ import { headers as nextHeaders } from "next/headers";
  * la cookie httpOnly. El navegador nunca ejecuta este código ni ve `API_URL`.
  */
 
-const API_URL = process.env.API_URL ?? "http://localhost:8000/api/v1";
+/**
+ * Fuerza `https` en hosts remotos. Si `API_URL` apunta a `http://` en un host
+ * que no es local, el backend redirige a `https` y `fetch` DESCARTA el header
+ * `Authorization` en ese salto (lo trata como otro origen) → el backend recibe
+ * la petición sin token y responde 401. Este blindaje evita que una env var mal
+ * configurada (http en vez de https) rompa la autenticación en producción.
+ */
+function forceHttpsForRemote(raw: string): string {
+  if (!raw.startsWith("http://")) return raw;
+  const host = raw.slice("http://".length).split("/")[0].split(":")[0];
+  const isLocal =
+    host === "localhost" || host === "127.0.0.1" || host === "[::1]";
+  return isLocal ? raw : "https://" + raw.slice("http://".length);
+}
+
+const API_URL = forceHttpsForRemote(
+  process.env.API_URL ?? "http://localhost:8000/api/v1"
+);
 
 /** Nombre de la cookie httpOnly que guarda el token Sanctum. */
 export const TOKEN_COOKIE = "agenda_token";

@@ -223,6 +223,27 @@ class BookingTest extends TestCase
         $this->assertSame(0, Appointment::count());
     }
 
+    public function test_rechaza_un_telefono_con_formato_invalido(): void
+    {
+        $this->login();
+        $base = [
+            'service_id' => $this->service->id,
+            'staff_member_id' => $this->staff->id,
+            'starts_at' => $this->slotAt('10:00:00'),
+            'name' => 'Cliente Prueba',
+            'email' => 'cliente@prueba.test',
+        ];
+
+        foreach (['88889999', '8888-999', '888-88888', 'abcd-efgh'] as $bad) {
+            $this->postJson(route('booking.store'), $base + ['phone' => $bad])
+                ->assertStatus(422)->assertJsonValidationErrorFor('phone');
+        }
+
+        // El formato correcto (8 dígitos con guion) sí se acepta.
+        $this->postJson(route('booking.store'), $base + ['phone' => '8855-9869'])
+            ->assertCreated();
+    }
+
     public function test_se_puede_cancelar_una_cita_por_su_token(): void
     {
         $appointment = Appointment::factory()

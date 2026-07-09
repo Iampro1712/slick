@@ -19,6 +19,10 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- BFF_SECRET vacío en tests: el rate limiter confía en X-Client-IP sin
+             exigir X-Bff-Secret. Evita que el secreto del .env local rompa los
+             tests de rate limiting (que asumen ese comportamiento). -->
+        <env name="BFF_SECRET" value="" force="true"/>
         <!-- BD aislada en memoria: los tests NUNCA tocan la base real del dev. -->
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>

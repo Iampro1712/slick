@@ -75,7 +75,7 @@ export default function LandingPage() {
           {/* Columna de texto */}
           <div className="text-left">
             <span className="motion-safe:animate-[fade-up_0.5s_ease-out_both] inline-flex items-center gap-2 rounded-md border border-line bg-surface px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-muted">
-              Barbería · Solo con cita
+              Solo con cita
             </span>
 
             <h1
@@ -151,10 +151,10 @@ export default function LandingPage() {
               </div>
 
               <div className="mt-4 flex items-center gap-3">
-                <Avatar name="Contreras" className="size-11 text-sm" />
+                <Avatar name="Profesional" className="size-11 text-sm" />
                 <div>
                   <p className="font-semibold text-ink">Corte + barba</p>
-                  <p className="text-sm text-muted">con Contreras</p>
+                  <p className="text-sm text-muted">con tu profesional</p>
                 </div>
               </div>
 

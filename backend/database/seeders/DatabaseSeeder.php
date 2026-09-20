@@ -12,8 +12,8 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database con la barbería de ejemplo (Barbería
-     * Contreras): un solo barbero que atiende únicamente con cita previa.
+     * Seed the application's database con una barbería de ejemplo:
+     * un solo barbero que atiende únicamente con cita previa.
      */
     public function run(): void
     {
@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
 
         // Dueño del negocio (es el mismo barbero): configura servicios y agenda.
         User::factory()->create([
-            'name' => 'Contreras',
+            'name' => 'Dueño Demo',
             'email' => 'dueno@agenda.test',
             'role' => \App\Enums\UserRole::Owner,
         ]);
@@ -68,24 +68,24 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // El único barbero del negocio.
-        $contreras = StaffMember::factory()->create(['name' => 'Contreras']);
+        $barbero = StaffMember::factory()->create(['name' => 'Barbero Demo']);
 
         // Usuario con rol staff vinculado al barbero: verá su agenda del día.
         User::factory()->create([
-            'name' => 'Contreras',
+            'name' => 'Barbero Demo',
             'email' => 'barbero@agenda.test',
             'role' => \App\Enums\UserRole::Staff,
-            'staff_member_id' => $contreras->id,
+            'staff_member_id' => $barbero->id,
         ]);
 
         // Horario: lunes a sábado, 8–12 y 13–18 (almuerzo de 12 a 13).
         foreach (range(1, 6) as $weekday) {
-            WorkingHour::factory()->for($contreras)->onWeekday($weekday)->between('08:00:00', '12:00:00')->create();
-            WorkingHour::factory()->for($contreras)->onWeekday($weekday)->between('13:00:00', '18:00:00')->create();
+            WorkingHour::factory()->for($barbero)->onWeekday($weekday)->between('08:00:00', '12:00:00')->create();
+            WorkingHour::factory()->for($barbero)->onWeekday($weekday)->between('13:00:00', '18:00:00')->create();
         }
 
         // El barbero ofrece todos los servicios.
-        $contreras->services()->attach([
+        $barbero->services()->attach([
             $corte->id,
             $corteBarba->id,
             $barba->id,

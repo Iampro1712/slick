@@ -5,6 +5,21 @@ Todos los cambios notables de **Slick** se documentan aquí.
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y el proyecto
 se adhiere a [Versionado Semántico](https://semver.org/lang/es/).
 
+## [Sin publicar]
+
+### Cambiado
+- El nombre de la marca ya no está fijo en el código: `lib/brand.ts` lo lee de la variable
+  `NEXT_PUBLIC_BRAND_NAME` (por defecto **Slick**). `NEXT_PUBLIC_BRAND_SHORT` define un
+  nombre corto opcional (por defecto, el mismo nombre). Ambas se incrustan en el build:
+  al cambiarlas hay que reiniciar `pnpm dev` o volver a construir el frontend.
+- Se quitó el texto de marca fijo de la landing ("Barbería · Solo con cita" y "con
+  Contreras" en la vista previa) y el `aria-label` del ícono (`icon.svg`).
+- Los usuarios de ejemplo del seeder pasan a nombres genéricos ("Dueño Demo" y
+  "Barbero Demo"); los correos y contraseñas de las cuentas demo no cambian.
+
+### Documentación
+- `frontend/.env.example` documenta `NEXT_PUBLIC_BRAND_NAME` y `NEXT_PUBLIC_BRAND_SHORT`.
+
 ## [1.1.0] — 2026-07-09
 
 Personalización de la primera instancia real (Barbería Contreras) y despliegue a

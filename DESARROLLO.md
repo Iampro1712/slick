@@ -86,6 +86,10 @@ API_URL=http://localhost:8000/api/v1
   (el proxy). El navegador nunca la ve ni llama a Laravel directamente.
 - Apunta a la **base versionada** `/api/v1`.
 - Crea también `.env.example` con la misma clave (sin valores sensibles) para documentar.
+- **Marca del negocio**: `NEXT_PUBLIC_BRAND_NAME` (por defecto `Slick`) y, opcionalmente,
+  `NEXT_PUBLIC_BRAND_SHORT` se leen en `src/lib/brand.ts`. Al llevar el prefijo
+  `NEXT_PUBLIC_` se incrustan en el build: si las cambias, reinicia `pnpm dev` o vuelve a
+  construir el frontend.
 - En producción, apunta a la URL real de la API.
 
 ---
